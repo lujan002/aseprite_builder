@@ -51,14 +51,19 @@ jobs:
       id: should_build
       if: steps.version_check.outputs.cache-hit != 'true'
       run: echo "should_build=true" >> $GITHUB_OUTPUT
+    - name: Checkout repository
+      if: steps.should_build.outputs.should_build == 'true'
+      uses: actions/checkout@v4
     - name: Create Release
       if: steps.should_build.outputs.should_build == 'true'
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        LATEST_TAG: ${{ steps.version_info.outputs.latest_tag }}
+        VERSION_INFO: ${{ steps.version_info.outputs.version_info }}
       run: |
-        gh release create ${{ steps.version_info.outputs.latest_tag }} \
-          --title "Release Aseprite ${{ steps.version_info.outputs.latest_tag }}" \
-          --notes "${{ steps.version_info.outputs.version_info }}" \
+        gh release create "${LATEST_TAG}" \
+          --title "Release Aseprite ${LATEST_TAG}" \
+          --notes "${VERSION_INFO}" \
           --draft
   
   build-aseprite:
